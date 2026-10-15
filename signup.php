@@ -1,44 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="box form-box">
-            <header>Sign Up</header>
-            <form action="signup_connect.php" method="post" enctype="multipart/form-data">
-                <div class="field input">
-                    <label for="username">Username</label>
-                    <input type="text" name="username" id="username" autocomplete="off" required>
-                </div>
-                <div class="field input">
-                    <label for="email">Email</label>
-                    <input type="email" name="email" id="email" autocomplete="off" required>
-                </div>
-                <div class="field input">
-                    <label for="password">Password</label>
-                    <input type="password" name="password" id="password" autocomplete="off" required>
-                </div>
-                <div class="field input">
-                    <label for="confirm_password">Confirm Password</label>
-                    <input type="password" name="confirm_password" id="confirm_password" autocomplete="off" required>
-                </div>
-                <div class="field input">
-                    <label for="profile_picture">Profile Picture</label>
-                    <input type="file" name="profile_picture" id="profile_picture" accept="image/*">
-                </div>
-                <div class="field">
-                    <input type="submit" name="submit" class="btn" value="Sign Up">
-                </div>
-                <div class="links">
-                    Already Have an Account? <a href="Tiktak.php">Login</a>
-                </div>
-            </form>
-        </div>
-    </div>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/auth.php';
+$error = $_SESSION['signup_error'] ?? '';
+unset($_SESSION['signup_error']);
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Create account · WatchWave</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><div class="box form-box"><header>Join WatchWave</header><p style="color:var(--muted)">Create an account to watch, upload, and comment.</p><?php if($error): ?><div class="alert"><?=e($error)?></div><?php endif; ?><form action="signup_connect.php" method="post" enctype="multipart/form-data"><div class="field"><label for="username">Username</label><input type="text" name="username" id="username" minlength="3" maxlength="100" pattern="[A-Za-z0-9_.-]+" placeholder="your_username" autocomplete="username" required></div><div class="field"><label for="email">Email</label><input type="email" name="email" id="email" placeholder="you@example.com" autocomplete="email" required></div><div class="field"><label for="password">Password</label><input type="password" name="password" id="password" minlength="8" autocomplete="new-password" required></div><div class="field"><label for="confirm_password">Confirm password</label><input type="password" name="confirm_password" id="confirm_password" minlength="8" autocomplete="new-password" required></div><div class="field"><label for="profile_picture">Profile picture <span style="color:var(--muted)">(optional)</span></label><input type="file" name="profile_picture" id="profile_picture" accept="image/jpeg,image/png,image/gif,image/webp"></div><div class="field"><input type="submit" class="btn" value="Create account"></div></form><div class="links">Already have an account? <a href="tiktak.php">Log in</a></div></div></div></body></html>

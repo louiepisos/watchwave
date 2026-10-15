@@ -1,44 +1,5 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
-
-if (!isset($_POST['video_path'])) {
-    header("Location: home.php");
-    exit();
-}
-
-$video_path = $_POST['video_path'];
-
-$database_name = 'signup';
-$conn = new mysqli('localhost', 'root', '', $database_name);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$username = $_SESSION['username'];
-$sql_admin = "SELECT * FROM users WHERE username='$username' AND is_admin=1";
-$result_admin = $conn->query($sql_admin);
-
-if ($result_admin->num_rows == 0) {
-    header("Location: home.php");
-    exit();
-}
-
-$sql_delete = "DELETE FROM uploaded_videos WHERE upload_video='$video_path'";
-if ($conn->query($sql_delete) === TRUE) {
-    if (unlink($video_path)) {
-        echo "Video deleted successfully.";
-    } else {
-        echo "Error deleting video file.";
-    }
-} else {
-    echo "Error deleting video from database.";
-}
-
-$conn->close();
-?>
+require_once __DIR__ . '/auth.php';
+require_admin($conn); if ($_SERVER['REQUEST_METHOD'] !== 'POST') redirect_to('home.php'); require_csrf();
+$id = (int)($_POST['video_id'] ?? 0); $stmt = $conn->prepare('SELECT upload_video FROM uploaded_videos WHERE id=?'); $stmt->bind_param('i',$id); $stmt->execute(); $video=$stmt->get_result()->fetch_assoc();
+if ($video) { $stmt=$conn->prepare('DELETE FROM uploaded_videos WHERE id=?'); $stmt->bind_param('i',$id); $stmt->execute(); $stmt=$conn->prepare('DELETE FROM comments WHERE video_id=?'); $stmt->bind_param('i',$id); $stmt->execute(); $path=__DIR__.'/'.$video['upload_video']; if (is_file($path)) unlink($path); } redirect_to('home.php');

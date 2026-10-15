@@ -1,36 +1,4 @@
 <?php
-session_start();
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $conn = new mysqli('localhost', 'root', '', 'signup');
-
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    $sql = "INSERT INTO users (username, password, is_admin) VALUES (?, ?, 1)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $username, $hashed_password);
-
-    if ($stmt->execute()) {
-        $_SESSION['admin_username'] = $username;
-        header("location: admin_login.php");
-        exit();
-    } else {
-        $_SESSION['signup_error'] = "Error creating admin account: " . $stmt->error;
-        header("location: admin_signup.php");
-        exit();
-    }
-
-    $stmt->close();
-    $conn->close();
-} else {
-    header("location: admin_signup.php");
-    exit();
-}
-?>
+require_once __DIR__ . '/auth.php';if($_SERVER['REQUEST_METHOD']!=='POST')redirect_to('admin_signup.php');$username=trim($_POST['username']??'');$password=$_POST['password']??'';$confirm=$_POST['confirm_password']??'';if(!preg_match('/^[A-Za-z0-9_.-]{3,100}$/',$username)){$_SESSION['signup_error']='Invalid username.';redirect_to('admin_signup.php');}if(strlen($password)<8||!hash_equals($password,$confirm)){$_SESSION['signup_error']='Passwords must match and contain at least 8 characters.';redirect_to('admin_signup.php');}
+$picture=null;$file=$_FILES['profile_picture']??null;if($file&&$file['error']!==UPLOAD_ERR_NO_FILE){if($file['error']!==UPLOAD_ERR_OK||$file['size']>5*1024*1024){$_SESSION['signup_error']='Profile pictures must be smaller than 5 MB.';redirect_to('admin_signup.php');}$mime=(new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);$ext=['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp'][$mime]??null;if(!$ext){$_SESSION['signup_error']='Use JPG, PNG, GIF, or WebP.';redirect_to('admin_signup.php');}$picture='profile/'.bin2hex(random_bytes(16)).'.'.$ext;if(!move_uploaded_file($file['tmp_name'],__DIR__.'/'.$picture)){$_SESSION['signup_error']='Could not save the profile picture.';redirect_to('admin_signup.php');}}
+$hash=password_hash($password,PASSWORD_DEFAULT);$stmt=$conn->prepare('INSERT INTO users(username,password,profile_picture,is_admin,is_banned) VALUES(?,?,?,1,0)');$stmt->bind_param('sss',$username,$hash,$picture);if(!$stmt->execute()){if($picture&&is_file(__DIR__.'/'.$picture))unlink(__DIR__.'/'.$picture);$_SESSION['signup_error']=$stmt->errno===1062?'That administrator username already exists.':'Database error: '.$stmt->error;redirect_to('admin_signup.php');}redirect_to('admin_login.php');

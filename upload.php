@@ -1,25 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="box form-box">
-            <header>Upload</header>
-            <form action="upload_connect.php" method="post" enctype="multipart/form-data">
-                <div class="field input">
-                    <label for="upload_video">Upload Video</label>
-                    <input type="file" name="upload_video" id="upload_video" accept="video/*">
-                </div>
-                <div class="field">
-                    <input type="submit" name="submit" class="btn" value="Upload">
-                </div>
-            </form>
-        </div>
-    </div>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/auth.php';
+$user = require_user($conn);
+$flash = $_SESSION['flash'] ?? '';
+unset($_SESSION['flash']);
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upload · WatchWave</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><div class="box form-box"><header>Upload a video</header><p style="color:var(--muted)">Share MP4, WebM, or MOV videos up to 500 MB.</p><?php if($flash): ?><div class="alert"><?=e($flash)?></div><?php endif; ?><form action="upload_connect.php" method="post" enctype="multipart/form-data"><input type="hidden" name="csrf" value="<?=e(csrf_token())?>"><div class="field"><label>Title</label><input name="title" maxlength="160" required></div><div class="field"><label>Description</label><input name="description" maxlength="2000"></div><div class="field"><label>Video file</label><input type="file" name="upload_video" accept="video/mp4,video/webm,video/quicktime" required></div><div class="field"><input class="btn" type="submit" value="Publish video"></div></form><div class="links"><a href="home.php">Back to WatchWave</a></div></div></div></body></html>

@@ -1,0 +1,40 @@
+services:
+  app:
+    build: .
+    container_name: watchwave_app
+    ports:
+      - "8081:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: signup
+      DB_USER: watchwave
+      DB_PASSWORD: watchwave_password
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./profile:/var/www/html/profile
+      - ./vid:/var/www/html/vid
+
+  db:
+    image: mysql:8.0
+    container_name: watchwave_db
+    environment:
+      MYSQL_DATABASE: signup
+      MYSQL_USER: watchwave
+      MYSQL_PASSWORD: watchwave_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3308:3306"
+    volumes:
+      - watchwave_db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  watchwave_db_data:

@@ -1,60 +1,7 @@
 <?php
-session_start();
-
-$username = $_POST['username'];
-$email = $_POST['email'];
-$password = $_POST['password'];
-$confirm_password = $_POST['confirm_password'];
-
-if ($password !== $confirm_password) {
-    $_SESSION['signup_error'] = "Passwords do not match!";
-    header("Location: signup.php");
-    exit();
-}
-$profile_picture = $_FILES['profile_picture']['name'];
-$profile_picture_temp = $_FILES['profile_picture']['tmp_name'];
-$profile_picture_path = 'profile/' . $profile_picture;
-move_uploaded_file($profile_picture_temp, $profile_picture_path);
-
-$conn = new mysqli('localhost', 'root', '', 'signup');
-if ($conn->connect_error) {
-    die('Connection Failed: ' . $conn->connect_error);
-} else {
-    $check_query = "SELECT * FROM users WHERE username = ?";
-    $stmt = $conn->prepare($check_query);
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $_SESSION['signup_error'] = "Username already taken!";
-        header("Location: signup.php");
-        exit();
-    } else {
-        $check_query = "SELECT * FROM users WHERE email = ?";
-        $stmt = $conn->prepare($check_query);
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $_SESSION['signup_error'] = "Email already used!";
-            header("Location: signup.php");
-            exit();
-        } else {
-            $insert_query = "INSERT INTO users (username, email, password, profile_picture) VALUES (?, ?, ?, ?)";
-            $stmt = $conn->prepare($insert_query);
-            $stmt->bind_param("ssss", $username, $email, $password, $profile_picture_path);
-            if ($stmt->execute()) {
-                header("Location: Tiktak.php");
-                exit();
-            } else {
-                $_SESSION['signup_error'] = "Error: " . $stmt->error;
-                header("Location: signup.php");
-                exit();
-            }
-        }
-    }
-    $conn->close();
-}
-?>
+require_once __DIR__ . '/auth.php';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') redirect_to('signup.php');
+$username=trim($_POST['username']??'');$email=trim($_POST['email']??'');$password=$_POST['password']??'';$confirm=$_POST['confirm_password']??'';
+if(!preg_match('/^[A-Za-z0-9_.-]{3,100}$/',$username)){$_SESSION['signup_error']='Invalid username.';redirect_to('signup.php');}if(!filter_var($email,FILTER_VALIDATE_EMAIL)){$_SESSION['signup_error']='Enter a valid email address.';redirect_to('signup.php');}if(strlen($password)<8||!hash_equals($password,$confirm)){$_SESSION['signup_error']='Passwords must match and contain at least 8 characters.';redirect_to('signup.php');}
+$picture=null;$file=$_FILES['profile_picture']??null;if($file&&$file['error']!==UPLOAD_ERR_NO_FILE){if($file['error']!==UPLOAD_ERR_OK||$file['size']>5*1024*1024){$_SESSION['signup_error']='Profile pictures must be smaller than 5 MB.';redirect_to('signup.php');}$mime=(new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);$ext=['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp'][$mime]??null;if(!$ext){$_SESSION['signup_error']='Use JPG, PNG, GIF, or WebP for profile pictures.';redirect_to('signup.php');}$picture='profile/'.bin2hex(random_bytes(16)).'.'.$ext;if(!move_uploaded_file($file['tmp_name'],__DIR__.'/'.$picture)){$_SESSION['signup_error']='Could not save the profile picture.';redirect_to('signup.php');}}
+$hash=password_hash($password,PASSWORD_DEFAULT);$stmt=$conn->prepare('INSERT INTO users(username,email,password,profile_picture,is_admin,is_banned) VALUES(?,?,?,?,0,0)');$stmt->bind_param('ssss',$username,$email,$hash,$picture);if(!$stmt->execute()){if($picture&&is_file(__DIR__.'/'.$picture))unlink(__DIR__.'/'.$picture);$_SESSION['signup_error']=$stmt->errno===1062?'Username or email is already registered.':'Database error: '.$stmt->error;redirect_to('signup.php');}redirect_to('tiktak.php');

@@ -1,10 +1,11 @@
 <?php
-$host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'signup'; 
+$host = getenv('DB_HOST') ?: 'localhost';
+$username = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASSWORD') ?: '';
+$database = getenv('DB_NAME') ?: 'signup';
+$port = (int) (getenv('DB_PORT') ?: 3306);
 
-$conn = new mysqli($host, $username, $password, $database);
+$conn = new mysqli($host, $username, $password, $database, $port);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);

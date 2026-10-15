@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(255) NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    profile_picture VARCHAR(255) NULL,
+    is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    is_banned TINYINT(1) NOT NULL DEFAULT 0,
+    ban_reason VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS uploaded_videos (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    upload_video VARCHAR(255) NOT NULL,
+    username VARCHAR(100) NOT NULL,
+    title VARCHAR(160) NOT NULL DEFAULT 'Untitled video',
+    description TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX (username)
+);
+CREATE TABLE IF NOT EXISTS comments (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    video_id INT UNSIGNED NOT NULL,
+    username VARCHAR(100) NOT NULL,
+    body TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX (video_id), INDEX (username)
+);

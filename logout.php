@@ -3,6 +3,6 @@ session_start();
 
 session_destroy();
 
-header("Location: Tiktak.php");
+header("Location: tiktak.php");
 exit;
 ?>
